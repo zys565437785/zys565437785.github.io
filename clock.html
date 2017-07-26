@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>title</title>
+</head>
+<body>
+ <canvas id="canvas" width="800" height="600" style="border:1px solid red"></canvas>
+</body>
+</html>
+<script>
+    var canvas=document.querySelector('canvas');
+    var ctx=canvas.getContext('2d');
+    function Clock(opt){
+        for(var key in opt){
+            this[key]=opt[key]
+        }
+        this.init();
+
+    };
+    Clock.prototype={
+        constructor:clock,
+        init:function(){
+            var seft=this;
+           var timer=setInterval(function (){
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            seft.drawCircle();
+            seft.drawLine();
+            seft.drawPoints();
+
+              
+           },1000)
+        },
+        drawCircle:function(){
+            ctx.save();
+            ctx.beginPath();
+            ctx.strokeStyle=this.lineColor;
+            ctx.lineWidth=this.lineWidth;
+            ctx.arc(this.clockX,this.clockY,this.clockRadius,0,2*Math.PI);
+            ctx.stroke();
+            ctx.restore();
+        },
+        //绘制刻度线
+        drawLine:function (){
+            var beginRadian=-Math.PI/3;
+            var singleRadian=2*Math.PI/60;
+            for(var i=0;i<60;i++){
+                var length,tickWidth;
+                var radian = beginRadian + singleRadian * i;
+                if(i%5==0){
+                    length=this.tick.biglength;
+                    tickWidth=this.tick.bigWidth;
+                    this.drawText(i/5+1,radian)
+                }else{
+                    length=20;
+                    tickWidth=2;
+                }
+                var radian=beginRadian+singleRadian*i;
+                var h1=(this.clockRadius-this.lineWidth/2)*Math.sin(radian);
+                var b1=(this.clockRadius-this.lineWidth/2)*Math.cos(radian);
+                var x1=this.clockX+b1;
+                var y1=this.clockY+h1;
+
+                var h2=(this.clockRadius-length)*Math.sin(radian);
+                var b2=(this.clockRadius-length)*Math.cos(radian);
+
+                var x2=this.clockX+b2
+                var y2=this.clockX+h2
+
+                //绘制线
+                ctx.save();
+                ctx.beginPath();
+                ctx.lineWidth=tickWidth;
+                ctx.moveTo(x1,y1);
+                ctx.lineTo(x2,y2);
+                ctx.stroke();
+                ctx.restore();
+                
+            }
+        },
+
+        //绘制指针
+        drawPoints:function (){
+            //先给定一个特定的时间来计算
+            var date=new Date();
+            //计算出时分秒
+            var hours=date.getHours()%12;  //本身是0-23小时制的
+            var minutes=date.getMinutes();
+            var second=date.getSeconds();
+            //计算出指针的弧度值
+            // var r=((minutes*60+seconds)/3600)*Math.PI/6;
+            var hoursRadian=hours*2*Math.PI/12-Math.PI/2;
+            
+            //  var rm=(Math.PI*seconds/60/30);
+            var minutesRadian=minutes*2*Math.PI/60-Math.PI/2;
+            var secondRadian=second*2*Math.PI/60-Math.PI/2;
+
+            this.drawSinglePoint(50,hoursRadian,8);
+            this.drawSinglePoint(80,minutesRadian,6);
+            this.drawSinglePoint(100,secondRadian,3);
+        },
+        drawSinglePoint:function(length,radian,lineWidth){
+            var h=length*Math.sin(radian);
+            var b=length*Math.cos(radian);
+            var x=this.clockX+b;
+            var y=this.clockY+h;
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(this.clockX,this.clockY);
+            ctx.lineTo(x,y);
+            ctx.lineWidth=lineWidth;
+            ctx.stroke();
+            ctx.restore();
+
+        },
+        //绘制文字
+        drawText:function(text,radian){
+            var length=this.clockRadius-this.tick.biglength-15;
+
+            var h=length*Math.sin(radian);
+            var b=length*Math.cos(radian);
+            var x=this.clockX+b;
+            var y=this.clockY+h;
+            ctx.save();
+            ctx.font='18px 微软雅黑';
+            ctx.textAlign='center';
+            ctx.textBaseline='middle';
+            ctx.fillText(text,x,y);
+            ctx.restore();
+
+
+        }
+    }
+
+    var clock= new Clock({
+        clockX:300,
+        clockY:300,
+        clockRadius:200,
+        lineWidth:10,
+        lineColor:'blue',
+        tick:{
+            biglength:30,
+            bigWidth:8
+        }
+        
+
+    });
+</script>
